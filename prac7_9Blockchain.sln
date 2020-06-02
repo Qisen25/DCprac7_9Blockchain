@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29911.84
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blockchain_WebService", "Blockchain_WebService\Blockchain_WebService.csproj", "{F4841296-ECDB-4718-BCDF-3A47358A9EFA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Miner_WebService", "Miner_WebService\Miner_WebService.csproj", "{A8155390-CC13-4A55-8442-DF372F912CD7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APIClass", "APIClass\APIClass.csproj", "{FE5FCD57-A33C-40E7-8BEC-8B5D9C6C9470}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Transaction_Generator", "Transaction_Generator\Transaction_Generator.csproj", "{304E65C5-53FE-496B-91C7-B74B25C8C4AB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F4841296-ECDB-4718-BCDF-3A47358A9EFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4841296-ECDB-4718-BCDF-3A47358A9EFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4841296-ECDB-4718-BCDF-3A47358A9EFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4841296-ECDB-4718-BCDF-3A47358A9EFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8155390-CC13-4A55-8442-DF372F912CD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8155390-CC13-4A55-8442-DF372F912CD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8155390-CC13-4A55-8442-DF372F912CD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8155390-CC13-4A55-8442-DF372F912CD7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE5FCD57-A33C-40E7-8BEC-8B5D9C6C9470}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE5FCD57-A33C-40E7-8BEC-8B5D9C6C9470}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE5FCD57-A33C-40E7-8BEC-8B5D9C6C9470}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE5FCD57-A33C-40E7-8BEC-8B5D9C6C9470}.Release|Any CPU.Build.0 = Release|Any CPU
+		{304E65C5-53FE-496B-91C7-B74B25C8C4AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{304E65C5-53FE-496B-91C7-B74B25C8C4AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{304E65C5-53FE-496B-91C7-B74B25C8C4AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{304E65C5-53FE-496B-91C7-B74B25C8C4AB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {167C1337-DC60-4BA7-9D38-EC35B7CF71F3}
+	EndGlobalSection
+EndGlobal
