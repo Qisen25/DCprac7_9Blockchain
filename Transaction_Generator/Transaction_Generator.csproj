@@ -43,6 +43,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.ServiceModel" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -76,6 +77,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MinerUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -106,6 +108,10 @@
     <ProjectReference Include="..\APIClass\APIClass.csproj">
       <Project>{fe5fcd57-a33c-40e7-8bec-8b5d9c6c9470}</Project>
       <Name>APIClass</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlockchainRemote\BlockchainRemote.csproj">
+      <Project>{917E3824-4B4D-49DF-A60A-CFF8A435A39F}</Project>
+      <Name>BlockchainRemote</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

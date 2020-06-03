@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APIClass", "APIClass\APICla
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Transaction_Generator", "Transaction_Generator\Transaction_Generator.csproj", "{304E65C5-53FE-496B-91C7-B74B25C8C4AB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "P2P_WebService", "P2P_WebService\P2P_WebService.csproj", "{2B67549F-84B1-42C1-9837-6B791F6FB43F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockchainRemote", "BlockchainRemote\BlockchainRemote.csproj", "{917E3824-4B4D-49DF-A60A-CFF8A435A39F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{304E65C5-53FE-496B-91C7-B74B25C8C4AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{304E65C5-53FE-496B-91C7-B74B25C8C4AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{304E65C5-53FE-496B-91C7-B74B25C8C4AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B67549F-84B1-42C1-9837-6B791F6FB43F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B67549F-84B1-42C1-9837-6B791F6FB43F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B67549F-84B1-42C1-9837-6B791F6FB43F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B67549F-84B1-42C1-9837-6B791F6FB43F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{917E3824-4B4D-49DF-A60A-CFF8A435A39F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{917E3824-4B4D-49DF-A60A-CFF8A435A39F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{917E3824-4B4D-49DF-A60A-CFF8A435A39F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{917E3824-4B4D-49DF-A60A-CFF8A435A39F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
