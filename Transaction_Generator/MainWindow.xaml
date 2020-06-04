@@ -7,32 +7,30 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <TextBlock HorizontalAlignment="Left" Margin="269,33,0,0" TextWrapping="Wrap" Text="Current state of blockchain" VerticalAlignment="Top" Height="23" Width="147"/>
+        <TextBlock HorizontalAlignment="Left" Margin="269,0,0,0" TextWrapping="Wrap" Text="Current state of blockchain" VerticalAlignment="Top" Height="23" Width="147"/>
         <Button Name="GetState" Content="Get State" HorizontalAlignment="Left" Margin="269,276,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="0.86,0.309" Click="GetState_Click"/>
-        <Button Name="Submit" Content="Submit" HorizontalAlignment="Left" Margin="75,170,0,0" VerticalAlignment="Top" Width="75" Click="Submit_Click"/>
-        <TextBox Name="AmountText" HorizontalAlignment="Left" Height="23" Margin="75,33,0,0" TextWrapping="Wrap" Text="Amount" VerticalAlignment="Top" Width="120"/>
-        <TextBox Name="SenderIDText" HorizontalAlignment="Left" Height="23" Margin="75,68,0,0" TextWrapping="Wrap" Text="Sender ID" VerticalAlignment="Top" Width="120"/>
-        <TextBox Name="ReceiverIDText" HorizontalAlignment="Left" Height="23" Margin="75,96,0,0" TextWrapping="Wrap" Text="Receiver ID" VerticalAlignment="Top" Width="120"/>
-        <TextBlock Name="NumBlocks" HorizontalAlignment="Left" Margin="269,61,0,0" TextWrapping="Wrap" Text="Number of Blocks: " VerticalAlignment="Top" Width="207" Height="23"/>
-        <ListView Name="ListUsers" HorizontalAlignment="Left" Height="182" Margin="269,89,0,0" VerticalAlignment="Top" Width="206">
+        <Button Name="Submit" Content="Submit" HorizontalAlignment="Left" Margin="10,281,0,0" VerticalAlignment="Top" Width="75" Click="Submit_Click"/>
+        <TextBox Name="PythonCodeText" HorizontalAlignment="Left" Height="238" Margin="10,33,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="237" AcceptsReturn="True"/>
+        <TextBlock Name="NumBlocks" HorizontalAlignment="Left" Margin="269,20,0,0" TextWrapping="Wrap" Text="Number of Blocks: " VerticalAlignment="Top" Width="207" Height="23"/>
+        <ListView Name="ListUsers" HorizontalAlignment="Left" Height="182" Margin="269,89,0,0" VerticalAlignment="Top" Width="277">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Wallet balances" Width="200"/>
+                    <GridViewColumn Header="Wallet balances" Width="277"/>
                 </GridView>
             </ListView.View>
         </ListView>
-        <ListView Name="PeerList" HorizontalAlignment="Left" Height="182" Margin="516,89,0,0" VerticalAlignment="Top" Width="249">
+        <ListView Name="PeerList" HorizontalAlignment="Left" Height="182" Margin="560,89,0,0" VerticalAlignment="Top" Width="222">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="List of Peers" Width="249"/>
+                    <GridViewColumn Header="List of Peers" Width="222"/>
                 </GridView>
             </ListView.View>
         </ListView>
-        <TextBlock Name="ourAddrText" HorizontalAlignment="Left" Margin="516,52,0,0" TextWrapping="Wrap" Text="Your Address: " VerticalAlignment="Top" Width="249" Height="20"/>
-        <Button Name="Refresh" Content="Refresh" HorizontalAlignment="Left" Margin="516,276,0,0" VerticalAlignment="Top" Width="75" Click="Refresh_Click"/>
-        <TextBlock HorizontalAlignment="Left" Margin="10,34,0,0" TextWrapping="Wrap" VerticalAlignment="Top"><Run Text="Amount"/></TextBlock>
-        <TextBlock HorizontalAlignment="Left" Margin="10,71,0,0" TextWrapping="Wrap" Text="Sender " VerticalAlignment="Top"/>
-        <TextBlock HorizontalAlignment="Left" Margin="10,103,0,0" TextWrapping="Wrap" Text="Receiver" VerticalAlignment="Top"/>
+        <TextBlock Name="ourAddrText" HorizontalAlignment="Left" Margin="560,52,0,0" TextWrapping="Wrap" Text="Your Address: " VerticalAlignment="Top" Width="222" Height="20"/>
+        <Button Name="Refresh" Content="Refresh" HorizontalAlignment="Left" Margin="560,276,0,0" VerticalAlignment="Top" Width="75" Click="Refresh_Click"/>
+        <TextBlock Name="YourNumJobs" HorizontalAlignment="Left" Margin="269,48,0,0" TextWrapping="Wrap" Text="Your amount of jobs:" VerticalAlignment="Top" Width="206" Height="24"/>
+        <TextBlock HorizontalAlignment="Left" Margin="34,10,0,0" TextWrapping="Wrap" Text="Enter code here" VerticalAlignment="Top" Width="110"/>
+        <TextBlock Name="NumTaskLoaded" HorizontalAlignment="Left" Margin="90,285,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="157" Height="29"/>
 
     </Grid>
 </Window>

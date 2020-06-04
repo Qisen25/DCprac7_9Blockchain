@@ -22,8 +22,7 @@ namespace Transaction_Generator
             {
                 bl.Offset++;
 
-                signature = bl.ID.ToString() + bl.SenderID.ToString() + bl.RecepientID.ToString()
-                              + bl.Amount.ToString() + bl.Offset.ToString() + bl.PrevHash;
+                signature = bl.ID.ToString() + bl.JsonStrList + bl.Offset.ToString() + bl.PrevHash;
 
                 Debug.WriteLine("Concat " + signature);
 

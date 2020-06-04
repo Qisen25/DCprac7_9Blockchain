@@ -1,5 +1,7 @@
 ﻿using APIClass;
 using BlockchainRemote;
+using IronPython.Hosting;
+using Microsoft.Scripting.Hosting;
 using Newtonsoft.Json;
 using RestSharp;
 using System;
@@ -11,6 +13,7 @@ using System.Security.Policy;
 using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.UI.WebControls;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -28,11 +31,11 @@ namespace Transaction_Generator
     /// </summary>
     public partial class MainWindow : Window
     {
-        private RestClient bankClient;
-        private RestClient minerClient;
-        private string bankUrl = "https://localhost:44346/";
-        private string minerUrl = "https://localhost:44360/";
-        private Dictionary<int, uint> existUsers;
+        //private RestClient bankClient;
+        //private RestClient minerClient;
+        //private string bankUrl = "https://localhost:44346/";
+        //private string minerUrl = "https://localhost:44360/";
+        //private Dictionary<int, uint> existUsers;
 
         private string url;
         private RestClient webPool;
@@ -41,13 +44,18 @@ namespace Transaction_Generator
         private PeerProgram ourServ;
         private RemoteInterface ourRemoteThread;
         private List<APIClass.Block> ourBlockchain;
+        private List<string[]> sendJobs, currJobsLogged;
+        private List<string[]> clientJobResults;
 
         public MainWindow()
         {
             InitializeComponent();
-            bankClient = new RestClient(bankUrl);
-            minerClient = new RestClient(minerUrl);
-            existUsers = new Dictionary<int, uint>();
+            //bankClient = new RestClient(bankUrl);
+            //minerClient = new RestClient(minerUrl);
+            //existUsers = new Dictionary<int, uint>();
+            sendJobs = new List<string[]>();
+            clientJobResults = new List<string[]>();
+            currJobsLogged = new List<string[]>();
 
             url = "https://localhost:44370/";
             webPool = new RestClient(url);
@@ -87,40 +95,140 @@ namespace Transaction_Generator
             {
                 while (true)
                 {
+                    //always update client list
+                    RestRequest req = new RestRequest("api/Client/ip/" + encodeClient.ip + "/port/" + encodeClient.port + "/GetPeers");
+                    IRestResponse resp = webPool.Get(req);
+                    this.clientList = JsonConvert.DeserializeObject<List<ClientDataStruct>>(resp.Content);
+
+                    //perform operations
+                    BroadcastTransaction();
                     DoMining(minUtils);
                     SynchroniseChain();
+                    GetResults();
                 }
             });
         }
 
+        /*
+         * whenever there are 5 jobs, broadcast this to all nearby peers
+         */
+        private void BroadcastTransaction()
+        {
+            if (sendJobs.Count == 5)
+            {
+                string sendSnippet = JsonConvert.SerializeObject(sendJobs);
+
+                ourRemoteThread.ReceiveTransaction(sendSnippet);
+
+                foreach (ClientDataStruct c in clientList)
+                {
+                    Console.WriteLine(c.ip + " " + c.port);
+                    RemoteInterface ri = ConnectToRemote(DecodeFrom64(c.ip), DecodeFrom64(c.port));
+
+                    ri.ReceiveTransaction(sendSnippet);//broadcast to each client in pool
+                }
+
+                sendJobs.Clear();//clear list once transactions sent off
+            }
+        }
+
+        /*
+         * creating blocks
+         */
         private void DoMining(MinerUtils minUtils)
         {
-            TransactionStruct newTrx = ourRemoteThread.ReceiveTransaction(null);
+            string recvTransaction = ourRemoteThread.ReceiveTransaction(null);
 
-            if (newTrx != null)
+            if (!string.IsNullOrEmpty(recvTransaction))
             {
-                if (minUtils.ValidateTransaction(newTrx.sender, newTrx.receiver, newTrx.amount))
+                    //insert transaction details
+                    APIClass.Block newBlock = new APIClass.Block();
+                    newBlock.ID = ourBlockchain.Last().ID + 1;
+                    newBlock.JsonStrList = DoPython(recvTransaction);
+                    newBlock.Hash = "";
+
+                    newBlock.PrevHash = ourRemoteThread.GetLatestBlock().Hash;
+
+                    newBlock = minUtils.GenerateHash(newBlock);//create valid hash and add it to new block
+
+                    ourRemoteThread.AddBlock(newBlock);
+                    ourBlockchain = ourRemoteThread.GetCurrentChain();
+            }
+        }
+
+        /*
+         * execute python code
+         */
+        private string DoPython(string pythonJobs)
+        {
+            string finalList = null, funcName, varName;
+            List<string[]> codeJobs = JsonConvert.DeserializeObject<List<string[]>>(pythonJobs);
+            codeJobs = codeJobs.OrderBy(x => x[0]).ToList();//alphabetical sort
+
+            foreach (string[] jb in codeJobs)
+            {
+                try
                 {
-                    float senderBalance = ourRemoteThread.GetWalletBalance(Convert.ToUInt32(newTrx.sender));
+                    string code = DecodeFrom64(jb[0]);
+                    ScriptEngine engine = Python.CreateEngine();
+                    ScriptScope scope = engine.CreateScope();
+                    //var res = engine.Execute("def poo():\r\n return 1", scope);
+                    var res = engine.Execute(code, scope);//remember to decode before executing python
 
-                    if (senderBalance >= newTrx.amount)
+                    if (IsAVar(code, out funcName, out varName))
                     {
-                        //insert transaction details
-                        APIClass.Block newBlock = new APIClass.Block();
-                        newBlock.ID = ourBlockchain.Last().ID + 1;
-                        newBlock.Amount = newTrx.amount;
-                        newBlock.SenderID = Convert.ToUInt32(newTrx.sender);
-                        newBlock.RecepientID = Convert.ToUInt32(newTrx.receiver);
-                        newBlock.Hash = "";
-
-                        newBlock.PrevHash = ourRemoteThread.GetLatestBlock().Hash;
-
-                        newBlock = minUtils.GenerateHash(newBlock);//create valid hash and add it to new block
-
-                        ourRemoteThread.AddBlock(newBlock);
-                        ourBlockchain = ourRemoteThread.GetCurrentChain();
+                        dynamic func = scope.GetVariable(varName);
+                        jb[1] = EncodeTo64(func.ToString());
                     }
+                    else
+                    {
+                        dynamic func = scope.GetVariable(funcName);
+                        var result = func();
+                        jb[1] = EncodeTo64(result.ToString());
+                    }
+                    ;//encode result/response to send back to remote server
                 }
+                catch (Exception e)
+                {
+                    jb[1] = "Fail: " + e.Message;//if code is run unsuccessfully just log error in answer index of string array
+                }
+            }
+
+            finalList = JsonConvert.SerializeObject(codeJobs);
+            return finalList;
+        }
+
+        /*
+         * checks if python code only has a function or a variable that is assigned a return value of a func created by user
+         */
+        private bool IsAVar(string code, out string fName, out string vName)
+        {
+            string funcName, varName = null;
+
+            funcName = code.Substring(3, code.IndexOf("(") - 3).Trim();//get function name excluding def and open bracket
+            if (code.Contains("return"))
+            {
+                string variableName = code.Substring(code.IndexOf("return"));
+                if (variableName.Contains("="))//get variable name if a function call exists after return such as foo = someFunc(), below will get foo variable name
+                {
+                    variableName = code.Substring(code.IndexOf("return"), code.IndexOf("=") - code.IndexOf("return"));
+                    string[] split = variableName.Split(new[] { ' ', '=', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                    variableName = split[split.Length - 1];
+                    varName = variableName;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(varName))//if code assigns a variable by a function call like abc = func(p, q) then the variable will have result
+            {
+                vName = varName;
+                fName = funcName;
+                return true;
+            }
+            else//otherwise just return from function
+            {
+                vName = varName;
+                fName = funcName;
+                return false;
             }
         }
 
@@ -130,10 +238,6 @@ namespace Transaction_Generator
          */
         private void SynchroniseChain()
         {
-            RestRequest req = new RestRequest("api/Client/ip/" + encodeClient.ip + "/port/" + encodeClient.port + "/GetPeers");
-            IRestResponse resp = webPool.Get(req);
-            clientList = JsonConvert.DeserializeObject<List<ClientDataStruct>>(resp.Content);
-
             Dictionary<string, int> hashCount = new Dictionary<string, int>();
             RemoteInterface ri = null;
 
@@ -189,6 +293,27 @@ namespace Transaction_Generator
             }
         }
 
+        /*
+         * retrieve results for current client posted jobs
+         */
+        private void GetResults()
+        {
+            if (currJobsLogged.Count >= 5)
+            {
+                bool found = false;
+                //send recent 5 jobs to access blockchain to get related answers and return back list with answers
+                List<string[]> temp = ourRemoteThread.GetAnswers(currJobsLogged.OrderBy(x => x[0]).ToList(), out found);
+                if (found)
+                {
+                    clientJobResults.AddRange(temp);
+                    for (int i = 0; i < 5; i++)
+                    {
+                        currJobsLogged.RemoveAt(0);//remove the recent jobs once answers are successfuly retrieved
+                    }
+                }
+            }
+        }
+
         private RemoteInterface ConnectToRemote(string ip, string port)//connect to remote server
         {
             ChannelFactory<RemoteInterface> foobFactory;
@@ -203,59 +328,18 @@ namespace Transaction_Generator
 
         private void GetState_Click(object sender, RoutedEventArgs e)
         {
-            //int count = 0;
-            //RestRequest req = new RestRequest("api/Bank/GetCurrentChain");
-            //IRestResponse resp = bankClient.Get(req);
-            //List<APIClass.Block> currChain = JsonConvert.DeserializeObject<List<APIClass.Block>>(resp.Content);
-
-            //NumBlocks.Text = "Number of Blocks: " + currChain.Count();
-            //ListUsers.Items.Clear();
-            //foreach(APIClass.Block b in currChain)
-            //{
-            //    req = new RestRequest("api/Bank/GetBalance/" + b.RecepientID);
-            //    resp = bankClient.Get(req);
-
-            //    if (!existUsers.ContainsValue(b.RecepientID))
-            //    {
-            //        existUsers.Add(count, b.RecepientID);
-            //    }
-
-            //    try
-            //    {
-            //        if (!ListUsers.Items.IsEmpty && ListUsers.Items.GetItemAt(existUsers.FirstOrDefault(x => x.Value.Equals(b.RecepientID)).Key) != null)
-            //        {
-            //            ListUsers.Items.RemoveAt(existUsers.FirstOrDefault(x => x.Value.Equals(b.RecepientID)).Key);
-            //        }
-            //    }
-            //    catch(ArgumentOutOfRangeException)
-            //    {
-            //        Debug.WriteLine("This is first time entry this is added");
-            //    }
-            //    ListUsers.Items.Insert(existUsers.FirstOrDefault(x => x.Value.Equals(b.RecepientID)).Key, b.RecepientID + " - Balance: " + resp.Content);
-
-            //    count++;
-            //}
-
             NumBlocks.Text = "Number of Blocks: " + ourBlockchain.Count();
-
-            Dictionary<uint, float> wallets = new Dictionary<uint, float>();
+            YourNumJobs.Text = "Your amount of jobs: " + clientJobResults.Count;
             ListUsers.Items.Clear();
-            foreach (APIClass.Block b in ourBlockchain)
+
+            int index = 1;
+            foreach (string[] arr in clientJobResults)
             {
-                if (wallets.TryGetValue(b.RecepientID, out _))
-                {
-                    wallets[b.RecepientID] = ourRemoteThread.GetWalletBalance(b.RecepientID);
-                }
-                else
-                {
-                    wallets.Add(b.RecepientID, ourRemoteThread.GetWalletBalance(b.RecepientID));
-                }
+                ListUsers.Items.Add("Code " + index  + "\n" + DecodeFrom64(arr[0]) + "\nResult: " + DecodeFrom64(arr[1]));
+                index++;
             }
 
-            foreach(KeyValuePair<uint, float> entry in wallets)
-            {
-                ListUsers.Items.Add("Wallet-" + entry.Key + " Balance: " + entry.Value);
-            }
+            NumTaskLoaded.Text = currJobsLogged.Count + " tasks loaded in queue";
         }
 
         private void Submit_Click(object sender, RoutedEventArgs e)
@@ -269,29 +353,34 @@ namespace Transaction_Generator
             //});
 
             //IRestResponse resp = minerClient.Post(req);
-
-            RestRequest req = new RestRequest("api/Client/ip/" + encodeClient.ip + "/port/" + encodeClient.port + "/GetPeers");
-            IRestResponse resp = webPool.Get(req);
-            clientList = JsonConvert.DeserializeObject<List<ClientDataStruct>>(resp.Content);
-
-            TransactionStruct inTrx = new TransactionStruct()
+            if (currJobsLogged.Count < 5)//can only send 5 transactions at a time
             {
-                amount = int.Parse(AmountText.Text),
-                sender = int.Parse(SenderIDText.Text),
-                receiver = int.Parse(ReceiverIDText.Text)
-            };
+                if (!string.IsNullOrEmpty(PythonCodeText.Text))
+                {
+                    string[] inJob = new string[2];
 
-            ourRemoteThread.ReceiveTransaction(inTrx);
+                    inJob[0] = EncodeTo64(PythonCodeText.Text);
 
-            foreach (ClientDataStruct c in clientList)
+                    sendJobs.Add(inJob);
+                    currJobsLogged.Add(inJob);
+
+                    NumTaskLoaded.Text = currJobsLogged.Count + " tasks loaded in queue";
+                }
+                else
+                {
+                    MessageBox.Show("Please enter code");
+                }
+            }
+            else
             {
-                Console.WriteLine(c.ip + " " + c.port);
-                RemoteInterface ri = ConnectToRemote(DecodeFrom64(c.ip), DecodeFrom64(c.port));
-
-                ri.ReceiveTransaction(inTrx) ;//broadcast to each client in pool
+                MessageBox.Show("Queue is full");
+                NumTaskLoaded.Text = "Click get state to get status";
             }
         }
 
+        /*
+         * Refresh peer list
+         */
         private void Refresh_Click(object sender, RoutedEventArgs e)
         {
             if(clientList != null || !(clientList.Count > 0))

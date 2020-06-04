@@ -12,7 +12,7 @@ namespace BlockchainRemote
     internal class PeerServer : RemoteInterface
     {
         private static Blockchain chain = Blockchain.GetInstance();
-        private static Queue<TransactionStruct> newTrx = new Queue<TransactionStruct>();
+        private static string pythonJobs = null;
 
         public List<Block> GetCurrentChain()
         {
@@ -30,17 +30,18 @@ namespace BlockchainRemote
         }
 
 
-        public TransactionStruct ReceiveTransaction(TransactionStruct tr)
+        public string ReceiveTransaction(string inPythonList)
         {
-            TransactionStruct outTrx = null;
+            string outTrx = null;
 
-            if (tr != null)
+            if (!string.IsNullOrEmpty(inPythonList)) 
             {
-                newTrx.Enqueue(tr);
+                pythonJobs = inPythonList;
             }
-            else if(newTrx.Count > 0)
+            else
             {
-                outTrx = newTrx.Dequeue();
+                outTrx = pythonJobs;
+                pythonJobs = null;
             }
 
             return outTrx;
@@ -54,9 +55,14 @@ namespace BlockchainRemote
             chain.SetChain(arr.ToList<Block>());
         }
 
-        public float GetWalletBalance(uint userID)
+        public List<string[]> GetAnswers(List<string[]> inList, out bool found)
         {
-            return chain.GetBalance(userID);
+            return chain.GetAnswers(inList, out found);
         }
+
+        //public float GetWalletBalance(uint userID)
+        //{
+        //    return chain.GetBalance(userID);
+        //}
     }
 }

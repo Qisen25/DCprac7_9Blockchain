@@ -21,12 +21,15 @@ namespace BlockchainRemote
         Block GetLatestBlock();
 
         [OperationContract]
-        TransactionStruct ReceiveTransaction(TransactionStruct tr);
+        List<string[]> GetAnswers(List<string[]> inList, out bool found);
+
+        [OperationContract]
+        string ReceiveTransaction(string pythonList);
 
         [OperationContract]
         void SetChain(List<Block> chain);
 
-        [OperationContract]
-        float GetWalletBalance(uint userID);
+        //[OperationContract]
+        //float GetWalletBalance(uint userID);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using APIClass;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -29,9 +30,7 @@ namespace BlockchainRemote
             Block genesis = new Block
             {
                 ID = 0,
-                SenderID = 0,
-                RecepientID = 0,
-                Amount = 99999,
+                JsonStrList = "",
                 Offset = 52968,
                 Hash = "1234542389",
                 PrevHash = ""
@@ -61,60 +60,35 @@ namespace BlockchainRemote
             return chain;
         }
 
+        public List<string[]> GetAnswers(List<string[]> clientList, out bool found)
+        {
+            found = false;
+            foreach(Block b in chain)
+            {
+                List<string[]> blockJson = JsonConvert.DeserializeObject<List<string[]>>(b.JsonStrList);
+                if (blockJson != null)
+                {
+                    for (int i = 0; i < 5; i++)
+                    {
+                        string[] arr1 = blockJson[i];
+                        string[] arr2 = clientList[i];
+                        if (arr1[0].Equals(arr2[0]) && string.IsNullOrEmpty(arr2[1]))//check if code matches and answer is empty
+                        {
+                            arr2[1] = arr1[1];//add answer
+                            clientList[i] = arr2;
+                            found = true;
+                        }
+                    }
+                }
+            }
+
+            return clientList;
+        }
+
         public void SetChain(List<Block> popularChain)
         {
             chain = popularChain;
         }
-
-        public float GetBalance(uint userID)
-        {
-            List<Block> temp = chain.FindAll(x => x.RecepientID == userID);
-            float coinsReceived = 0.0F, coinsSent = 0.0F, total = 0.0f;
-
-            foreach(Block b in chain)
-            {
-                if (b.RecepientID == userID)
-                {
-                    coinsReceived += b.Amount;
-                }
-                else if(b.SenderID == userID)
-                {
-                    coinsSent += b.Amount;
-                }
-            }
-
-            total = coinsReceived - coinsSent;
-
-            return total;
-        }
-
-        //public Block MakeHash(Block bl)
-        //{
-        //    string signature = null;
-
-        //    while (!bl.Hash.StartsWith("12345"))
-        //    {
-        //        bl.Offset++;
-
-        //        signature = bl.ID.ToString() + bl.SenderID.ToString() + bl.RecepientID.ToString()
-        //                      + bl.Amount.ToString() + bl.Offset.ToString() + bl.PrevHash;
-
-        //        Debug.WriteLine("Concat " + signature);
-                
-        //        using (SHA256 sha256Hash = SHA256.Create())
-        //        {
-        //            byte[] txtBytes = System.Text.Encoding.ASCII.GetBytes(signature);
-        //            byte[] hash = sha256Hash.ComputeHash(txtBytes);
-
-        //            bl.Hash = BitConverter.ToUInt32(hash, 0).ToString();
-        //        }
-                
-
-        //        Debug.WriteLine("hash " + bl.Hash);
-        //    }
-
-        //    return bl;
-        //}
 
         public bool ValidateTransaction(Block bl)
         {
@@ -130,8 +104,7 @@ namespace BlockchainRemote
 
         public bool ValidateHash(Block bl)
         {
-            string  signature = bl.ID.ToString() + bl.SenderID.ToString() + bl.RecepientID.ToString()
-                            + bl.Amount.ToString() + bl.Offset.ToString() + bl.PrevHash;
+            string  signature = bl.ID.ToString() + bl.JsonStrList + bl.Offset.ToString() + bl.PrevHash;
 
             Debug.WriteLine("Concat " + signature);
 
@@ -149,5 +122,55 @@ namespace BlockchainRemote
 
             return bl.Hash.Equals(tempHash);
         }
+
+        //public float GetBalance(uint userID)
+        //{
+        //    List<Block> temp = chain.FindAll(x => x.RecepientID == userID);
+        //    float coinsReceived = 0.0F, coinsSent = 0.0F, total = 0.0f;
+
+        //    foreach(Block b in chain)
+        //    {
+        //        if (b.RecepientID == userID)
+        //        {
+        //            coinsReceived += b.Amount;
+        //        }
+        //        else if(b.SenderID == userID)
+        //        {
+        //            coinsSent += b.Amount;
+        //        }
+        //    }
+
+        //    total = coinsReceived - coinsSent;
+
+        //    return total;
+        //}
+
+        //public Block MakeHash(Block bl)
+        //{
+        //    string signature = null;
+
+        //    while (!bl.Hash.StartsWith("12345"))
+        //    {
+        //        bl.Offset++;
+
+        //        signature = bl.ID.ToString() + bl.SenderID.ToString() + bl.RecepientID.ToString()
+        //                      + bl.Amount.ToString() + bl.Offset.ToString() + bl.PrevHash;
+
+        //        Debug.WriteLine("Concat " + signature);
+
+        //        using (SHA256 sha256Hash = SHA256.Create())
+        //        {
+        //            byte[] txtBytes = System.Text.Encoding.ASCII.GetBytes(signature);
+        //            byte[] hash = sha256Hash.ComputeHash(txtBytes);
+
+        //            bl.Hash = BitConverter.ToUInt32(hash, 0).ToString();
+        //        }
+
+
+        //        Debug.WriteLine("hash " + bl.Hash);
+        //    }
+
+        //    return bl;
+        //}
     }
 }

@@ -8,8 +8,7 @@ namespace APIClass
 {
     public class TransactionStruct
     {
-        public float amount { get; set; }
-        public int sender { get; set; }
-        public int receiver { get; set; }
+        public string Code { get; set; }
+        public string Answer { get; set; }
     }
 }
