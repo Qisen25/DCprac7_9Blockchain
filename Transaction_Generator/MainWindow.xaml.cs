@@ -162,17 +162,18 @@ namespace Transaction_Generator
             if (hashCount.Count > 0)
             {
                 string maxHash = hashCount.OrderBy(x => x.Value).Last().Key;//find hash with highest population count
+                APIClass.Block currBlock = ourRemoteThread.GetLatestBlock();
                 List<APIClass.Block> popularChain = null;
                 bool found = false;
-                //if max hash is not found 
-                if (!ourRemoteThread.GetLatestBlock().Hash.Equals(maxHash))
+                //if latest block doesn't have the most popular hash and current block prev hash does not match popular hash then download popular chain
+                if (!currBlock.Hash.Equals(maxHash) && !currBlock.PrevHash.Equals(maxHash))
                 {
                     foreach (ClientDataStruct c in clientList)
                     {
                         ri = ConnectToRemote(DecodeFrom64(c.ip), DecodeFrom64(c.port));
                         popularChain = ri.GetCurrentChain();
 
-                        if (!ri.GetLatestBlock().Hash.Equals(maxHash))
+                        if (ri.GetLatestBlock().Hash.Equals(maxHash))
                         {
                             found = true;
                             break;
@@ -182,7 +183,7 @@ namespace Transaction_Generator
                     if (found)
                     {
                         ourRemoteThread.SetChain(popularChain);
-                        //ourBlockchain = ourRemoteThread.GetCurrentChain();
+                        ourBlockchain = ourRemoteThread.GetCurrentChain();
                     }
                 }
             }
@@ -302,6 +303,17 @@ namespace Transaction_Generator
                     PeerList.Items.Add("IP: " + DecodeFrom64(c.ip) + " Port: " + DecodeFrom64(c.port));
                 }
             }
+        }
+
+        /*
+         * Remove this client from peer pool when closing window
+         */
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            RestRequest req = new RestRequest("api/Client/RemoveClient");
+            req.AddJsonBody(encodeClient);
+
+            webPool.Delete(req);
         }
 
         /*
